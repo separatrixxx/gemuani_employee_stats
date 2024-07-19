@@ -1,4 +1,4 @@
-# gemuani_employee_stats
+# Gemuani Employee Stats Web
 
 ### Install dependencies first: `npm install`
 
