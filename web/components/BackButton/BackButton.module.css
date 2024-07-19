@@ -1,0 +1,36 @@
+.backButton {
+	position: absolute;
+	z-index: 10;
+	top: 20px;
+	left: 20px;
+
+	display: grid;
+
+	width: 40px;
+	height: 40px;
+
+	cursor: pointer;
+	transition-duration: 300ms;
+
+	color: var(--white);
+	border-radius: 9999px;
+	background: var(--primary);
+
+	font-size: 32px;
+	font-weight: 600;
+	justify-items: center;
+}
+
+.backButton:active {
+	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+	filter: brightness(0.9);
+}
+
+@media (min-width: 1024px) {
+	.backButton:hover {
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+		filter: brightness(0.9);
+	}
+}

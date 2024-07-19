@@ -1,0 +1,15 @@
+export const en = {
+    locale: "en",
+    language: "English",
+    lang: "EN",
+    gemuani_employee_stats: 'gemuani_employee_stats',
+    error404: "Page not found, 404 error",
+    error500: "Server failure, error 500",
+    came: "Came to work",
+    gone: "Left work",
+    guest: "Guest",
+    confirm_text: "I, ${name}, confirm that I am arriving/leaving the Gemuani factory in ${date}",
+    signature: "Signature",
+    clear: "Clear",
+    confirm: "Confirm",
+};

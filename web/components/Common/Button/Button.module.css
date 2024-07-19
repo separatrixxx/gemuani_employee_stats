@@ -1,0 +1,54 @@
+.button {
+	display: grid;
+	align-items: center;
+
+	width: 90%;
+	height: fit-content;
+	padding: 20px;
+
+	cursor: pointer;
+	transition-duration: 300ms;
+
+	color: var(--primary);
+
+	border: 2px solid var(--primary);
+	border-radius: 20px;
+	background: var(--white);
+	box-shadow: 0 1px 1px rgb(0 0 0 / 0.03), 0 1px 1px rgb(0 0 0 / 0.05);
+
+	font-size: 36px;
+	font-weight: 600;
+}
+
+.came,
+.gone,
+.guest {
+	color: var(--white);
+	border: none;
+}
+
+.came {
+	background: var(--came);
+}
+
+.gone {
+	background: var(--gone);
+}
+
+.guest {
+	background: var(--guest);
+}
+
+.button:active {
+	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+	filter: brightness(0.9);
+}
+
+@media (min-width: 1024px) {
+	.button:hover {
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+		filter: brightness(0.9);
+	}
+}
