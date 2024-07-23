@@ -367,13 +367,15 @@ export interface ApiEmployeeEmployee extends Schema.CollectionType {
   info: {
     singularName: 'employee';
     pluralName: 'employees';
-    displayName: 'employee';
+    displayName: 'Employee';
+    description: '';
   };
   options: {
     draftAndPublish: true;
   };
   attributes: {
     name: Attribute.String & Attribute.Required;
+    password: Attribute.String & Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -388,6 +390,34 @@ export interface ApiEmployeeEmployee extends Schema.CollectionType {
       'oneToOne',
       'admin::user'
     > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiStatStat extends Schema.CollectionType {
+  collectionName: 'stats';
+  info: {
+    singularName: 'stat';
+    pluralName: 'stats';
+    displayName: 'Stats';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required;
+    action: Attribute.String & Attribute.Required;
+    timestamp: Attribute.String & Attribute.Required;
+    isGuest: Attribute.Boolean &
+      Attribute.Required &
+      Attribute.DefaultTo<false>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::stat.stat', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::stat.stat', 'oneToOne', 'admin::user'> &
       Attribute.Private;
   };
 }
@@ -829,6 +859,7 @@ declare module '@strapi/types' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'api::employee.employee': ApiEmployeeEmployee;
+      'api::stat.stat': ApiStatStat;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::content-releases.release': PluginContentReleasesRelease;

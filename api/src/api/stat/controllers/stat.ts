@@ -1,7 +1,7 @@
 import { factories } from '@strapi/strapi'
 
 
-export default factories.createCoreController('api::employee.employee', ({ strapi }) =>  ({
+export default factories.createCoreController('api::stat.stat', ({ strapi }) =>  ({
     async find(ctx) {
         const { data } = await super.find(ctx);
 
@@ -9,7 +9,9 @@ export default factories.createCoreController('api::employee.employee', ({ strap
             return {
                 id: entity.id,
                 name: entity.attributes.name,
-                password: entity.attributes.password,
+                action: entity.attributes.action,
+                timestamp: entity.attributes.timestamp,
+                isGuest: entity.attributes.isGuest,
             }
         });
 

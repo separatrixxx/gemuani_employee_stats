@@ -5,4 +5,5 @@ export interface EmployeeDataInterface {
 export interface EmployeeInterface {
     id: number,
     name: string,
+    password: string,
 }

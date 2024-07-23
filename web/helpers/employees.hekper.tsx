@@ -11,7 +11,7 @@ export async function getEmployees(dispatch: any) {
         })
             .then(async function (jwt) {
                 const { data : response }: AxiosResponse<EmployeeDataInterface> = await axios.get(process.env.NEXT_PUBLIC_DOMAIN +
-                    '/api/employees', {
+                    '/api/employees?pagination%5Blimit%5D=100', {
                         headers: {
                             'Authorization': 'Bearer ' + jwt.data.jwt,
                             'Content-Type': 'application/json'
