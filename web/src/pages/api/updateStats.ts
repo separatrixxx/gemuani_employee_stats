@@ -6,7 +6,8 @@ import axios from 'axios';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID as string;
-const SHEET_NAME = 'Sheet1';
+const SHEET_NAME_EMPLOYEES = 'Employees';
+const SHEET_NAME_GUESTS = 'Guests';
 
 const getAuth = async (): Promise<JWT> => {
     const auth = new GoogleAuth({
@@ -16,6 +17,7 @@ const getAuth = async (): Promise<JWT> => {
         },
         scopes: SCOPES,
     });
+
     return (await auth.getClient()) as JWT;
 };
 
@@ -25,12 +27,14 @@ const getStatsData = async (jwt: string) => {
             'Authorization': `Bearer ${jwt}`,
         },
     });
+
     return response.data.data;
 };
 
 const processStatsData = (data: any) => {
     const groupedData = data.reduce((acc: any, item: any) => {
         const date = item.timestamp.split(' ')[0];
+        
         if (!acc[date]) {
             acc[date] = {};
         }
@@ -70,39 +74,126 @@ const processStatsData = (data: any) => {
     }, {});
 
     return Object.entries(groupedData).flatMap(([date, employees]: [string, any]) => {
-        return Object.values(employees).map((employee: any) => [
+        return Object.values(employees).map((employee: any) => ({
             date,
-            employee.name,
-            employee.came,
-            employee.break,
-            employee.gone,
-            employee.isGuest,
-            employee.totalTime
-        ]);
+            name: employee.name,
+            came: employee.came,
+            break: employee.break,
+            gone: employee.gone,
+            isGuest: employee.isGuest === '+' ? true : false,
+            totalTime: employee.totalTime
+        }));
     });
+};
+
+const getExistingRecords = async (sheets: any, sheetName: string) => {
+    const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${sheetName}!A:E`,
+    });
+
+    return response.data.values || [];
 };
 
 const updateGoogleSheet = async (data: any[]) => {
     const auth = await getAuth();
     const sheets = google.sheets({ version: 'v4', auth });
 
-    const range = `${SHEET_NAME}!A2:G${data.length + 1}`;
+    const existingEmployeeRecords = await getExistingRecords(sheets, SHEET_NAME_EMPLOYEES);
 
-    await sheets.spreadsheets.values.clear({
-        spreadsheetId: SPREADSHEET_ID,
-        range: range,
+    const existingEmployeeMap = existingEmployeeRecords.reduce((acc: any, row: any, index: number) => {
+        const [date, name] = row;
+
+        if (!acc[date]) {
+            acc[date] = {};
+        }
+
+        acc[date][name] = index + 1;
+
+        return acc;
+    }, {});
+
+    const employeeRequests = data.filter(row => !row.isGuest).map((row) => {
+        const { date, name, came, break: breakTime, gone, totalTime } = row;
+        const rowIndex = existingEmployeeMap[date] ? existingEmployeeMap[date][name] : null;
+
+        const values = [date, name, came, breakTime, gone, totalTime];
+
+        if (rowIndex) {
+            return {
+                updateCells: {
+                    range: {
+                        sheetId: 0,
+                        startRowIndex: rowIndex - 1,
+                        endRowIndex: rowIndex,
+                        startColumnIndex: 0,
+                        endColumnIndex: values.length,
+                    },
+                    rows: [
+                        {
+                            values: values.map((cell: any) => ({
+                                userEnteredValue: { stringValue: cell },
+                            })),
+                        },
+                    ],
+                    fields: 'userEnteredValue',
+                },
+            };
+        } else {
+            return {
+                appendCells: {
+                    sheetId: 0,
+                    rows: [
+                        {
+                            values: values.map((cell: any) => ({
+                                userEnteredValue: { stringValue: cell },
+                            })),
+                        },
+                    ],
+                    fields: 'userEnteredValue',
+                },
+            };
+        }
     });
 
-    const request = {
-        spreadsheetId: SPREADSHEET_ID,
-        range: range,
-        valueInputOption: 'RAW',
-        resource: {
-            values: data,
-        },
-    };
+    const guestRequests = data.filter(row => row.isGuest).map((row) => {
+        const { date, name, came } = row;
+        const values = [date, name, came];
 
-    await sheets.spreadsheets.values.update(request);
+        return {
+            appendCells: {
+                sheetId: 0,
+                rows: [
+                    {
+                        values: values.map((cell: any) => ({
+                            userEnteredValue: { stringValue: cell },
+                        })),
+                    },
+                ],
+                fields: 'userEnteredValue',
+            },
+        };
+    });
+
+    await sheets.spreadsheets.values.append({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${SHEET_NAME_GUESTS}!A:C`,
+        valueInputOption: 'RAW',
+        requestBody: {
+            values: guestRequests.map(({ appendCells }) =>
+                appendCells.rows[0].values.map(cell => cell.userEnteredValue.stringValue)
+            ),
+        },
+    });
+
+    if (employeeRequests.length > 0) {
+        await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            requestBody: {
+                requests: employeeRequests,
+            },
+        });
+    }
 };
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
