@@ -99,6 +99,10 @@ const updateGoogleSheet = async (data: any[]) => {
     const auth = await getAuth();
     const sheets = google.sheets({ version: 'v4', auth });
 
+    const existingGuestRecords = await getExistingRecords(sheets, SHEET_NAME_GUESTS);
+
+    const existingGuestSet = new Set(existingGuestRecords.map((row: any) => row.join(',')));
+
     const existingEmployeeRecords = await getExistingRecords(sheets, SHEET_NAME_EMPLOYEES);
 
     const existingEmployeeMap = existingEmployeeRecords.reduce((acc: any, row: any, index: number) => {
@@ -156,35 +160,40 @@ const updateGoogleSheet = async (data: any[]) => {
         }
     });
 
-    const guestRequests = data.filter(row => row.isGuest).map((row) => {
-        const { date, name, came } = row;
-        const values = [date, name, came];
+    const guestRequests = data
+        .filter(row => row.isGuest)
+        .filter(row => !existingGuestSet.has([row.date, row.name, row.came].join(',')))
+        .map((row) => {
+            const { date, name, came } = row;
+            const values = [date, name, came];
 
-        return {
-            appendCells: {
-                sheetId: 0,
-                rows: [
-                    {
-                        values: values.map((cell: any) => ({
-                            userEnteredValue: { stringValue: cell },
-                        })),
-                    },
-                ],
-                fields: 'userEnteredValue',
+            return {
+                appendCells: {
+                    sheetId: 0,
+                    rows: [
+                        {
+                            values: values.map((cell: any) => ({
+                                userEnteredValue: { stringValue: cell },
+                            })),
+                        },
+                    ],
+                    fields: 'userEnteredValue',
+                },
+            };
+        });
+
+    if (guestRequests.length > 0) {
+        await sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `${SHEET_NAME_GUESTS}!A:C`,
+            valueInputOption: 'RAW',
+            requestBody: {
+                values: guestRequests.map(({ appendCells }) =>
+                    appendCells.rows[0].values.map(cell => cell.userEnteredValue.stringValue)
+                ),
             },
-        };
-    });
-
-    await sheets.spreadsheets.values.append({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `${SHEET_NAME_GUESTS}!A:C`,
-        valueInputOption: 'RAW',
-        requestBody: {
-            values: guestRequests.map(({ appendCells }) =>
-                appendCells.rows[0].values.map(cell => cell.userEnteredValue.stringValue)
-            ),
-        },
-    });
+        });
+    }
 
     if (employeeRequests.length > 0) {
         await sheets.spreadsheets.batchUpdate({
@@ -195,6 +204,7 @@ const updateGoogleSheet = async (data: any[]) => {
         });
     }
 };
+
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     try {
