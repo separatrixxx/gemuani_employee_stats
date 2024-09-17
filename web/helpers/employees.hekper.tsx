@@ -18,7 +18,16 @@ export async function getEmployees(dispatch: any) {
                         }
                     });
                     
-                dispatch(setEmployees(response.data));
+                dispatch(setEmployees(response.data.sort(function (a, b) {
+                    if (a.name > b.name) {
+                      return 1;
+                    }
+                    if (a.name < b.name) {
+                      return -1;
+                    }
+
+                    return 0;
+                })));
             })
             .catch(function (error) {
                 console.log("Get JWT error: " + error);

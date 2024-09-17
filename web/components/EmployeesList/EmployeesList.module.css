@@ -1,8 +1,28 @@
 .employeesList {
 	display: grid;
 
-	width: 100%;
-	margin-top: 80px;
-	gap: 20px;
+	width: 90%;
+	margin: 80px 0 40px 0;
+	gap: 12px;
 	justify-items: center;
+	grid-template-columns: repeat(4, auto);
+}
+
+@media (max-width: 1200px) {
+	.employeesList {
+		grid-template-columns: repeat(3, auto);
+	}
+}
+
+@media (max-width: 900px) {
+	.employeesList {
+		grid-template-columns: repeat(2, auto);
+	}
+}
+
+@media (max-width: 700px) {
+	.employeesList {
+		width: 100%;
+		grid-template-columns: auto;
+	}
 }

@@ -11,7 +11,7 @@ export const EmployeesList = ({ setType, setEmployeeId }: EmployeesListProps): J
     return (
         <div className={styles.employeesList}>
             {employees.map(e => (
-                <Button key={e.id} text={e.name} onClick={() => {
+                <Button key={e.id} text={e.name} isEmployee={true} onClick={() => {
                     setEmployeeId(e.id);
                     setType('sign');
                 }} />

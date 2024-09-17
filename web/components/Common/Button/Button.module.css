@@ -39,6 +39,16 @@
 	background: var(--guest);
 }
 
+.employee {
+	padding: 7px;
+
+	border-width: 1px;
+	border-radius: 10px;
+
+	font-size: 22px;
+	font-weight: 500;
+}
+
 .button:active {
 	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 
