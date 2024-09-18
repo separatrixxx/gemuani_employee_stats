@@ -22,7 +22,7 @@ export const SignBlock = ({ type, employeeId, isGuest, setType }: SignBlockProps
 
     return (
         <div className={styles.signBlock}>
-            <Htag tag='m'>
+            <Htag tag='m' className={styles.signText}>
                 {setLocale(router.locale).confirm_text
                     .replace('${name}', !isGuest ? employee.name : password)
                     .replace('${date}', date)}
