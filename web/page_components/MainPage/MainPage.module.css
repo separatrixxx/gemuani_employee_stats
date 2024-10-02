@@ -1,5 +1,6 @@
 .wrapper {
 	display: grid;
+	margin-top: 40px;
 
 	width: 100%;
 	justify-items: center;
